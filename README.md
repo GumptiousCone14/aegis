@@ -1,8 +1,287 @@
-🛡️ Aegis Security<div align="center"><img src="https://picsum.photos/seed/aegis-logo/200/200" alt="Aegis Security Logo" width="160" height="160"><p align="center"><strong>The Autonomous Defense Layer for the Modern Workspace.</strong><br />Next-generation EPP powered by on-device AI, ensuring zero-latency protection without sacrificing privacy.</p><p align="center"><a href="#installation-development">快速开始 (Quick Start)</a> •<a href="#">Documentation</a> •<a href="#">Architecture Whitepaper</a> •<a href="#">Security Advisories</a></p><div><img src="https://img.shields.io/badge/Endpoint_Security-Enterprise--Grade-blue?style=for-the-badge" alt="Endpoint Security"><img src="https://img.shields.io/badge/AI_On--Device-Privacy_First-success?style=for-the-badge" alt="AI On-Device"><img src="https://img.shields.io/badge/Zero_Signature-Behavioral_Detection-critical?style=for-the-badge" alt="Zero Signature"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></div></div>📖 Executive SummaryAegis Security is a paradigm shift in Endpoint Protection (EPP). Traditional solutions wait for a signature; Aegis predicts the intent. By utilizing Genkit-orchestrated Gemini models locally on the endpoint, Aegis analyzes process telemetry in real-time to neutralize fileless malware, ransomware, and zero-day exploits before they reach the "execution-complete" phase.Why Aegis?Privacy-Native: Your system logs never leave your machine. Inference happens locally.Signature-Less: Detects malware based on how it behaves, not what it looks like.Self-Healing: Automatically rolls back unauthorized system changes.🛠️ Tech Stack & ArchitectureAegis combines a robust React-based management interface with a high-performance AI backend.The Shield FrameworkLayerTechnologyRoleFrontendNext.js 14, React, TailwindCSSReal-time security console & forensicsOrchestrationFirebase, Google CloudFleet telemetry & policy distributionAI BrainGenkit, Gemini Nano/ProBehavioral analysis & threat attributionSystemTypeScript, Simulated DriversTelemetry ingestion & process hook simulation🧠 AI Multi-Layered DefenseAegis does not rely on a single model. It employs a hierarchical AI strategy:L1: Heuristic Gatekeeper – Rapid filtering of known malicious syscall patterns.L2: Contextual Agent (Genkit) – Analyzes the relationship between disparate events (e.g., a Word doc launching PowerShell).L3: Forensic Attribution – High-level Gemini analysis that maps the attack to MITRE ATT&CK® frameworks.🚀 Getting Started (Development)PrerequisitesNode.js: v20.x or higherHardware: TPM 2.0 enabled (recommended for hardware-backed features)API Access: Google AI Studio API Key (for Gemini integration)InstallationClone & NavigateBashgit clone https://github.com/your-org/Aegis-Security.git
-cd Aegis-Security
-Dependency BootstrappingBashnpm install
-Environment ConfigurationCreate a .env.local file:Code snippetNEXT_PUBLIC_GEMINI_API_KEY=your_key_here
-FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_ENVIRONMENT=development
-Launch Dev EnvironmentBashnpm run dev
-The dashboard will initialize at http://localhost:9002.📊 Feature RoadmapPhaseMilestoneStatusPhase 1Behavioral AI Core & React Dashboard✅Phase 2Real-time Alerting & Forensic Visualization✅Phase 3macOS & Linux Agent Alpha🏗️Phase 4Windows Kernel-Mode Driver (C++)📅Phase 5Enterprise SIEM Connectors (Splunk/Sentinel)📅🛡️ Security & Responsible DisclosureIf you discover a vulnerability within Aegis, please help us keep our users safe.Note: Do not open public GitHub issues for security flaws.Send a detailed report to security@aegis-defense.io. We aim to respond within 24 hours.⚖️ Legal DisclaimerUsage Warning: Aegis Security is currently in a development/preview state. While powerful, it should not be the sole line of defense in mission-critical or regulated environments (HIPAA, PCI-DSS) until the stable v1.0 release and kernel-driver integration are complete.<div align="center"><sub>Built with ❤️ by the Aegis Security Team. Licensed under <a href="LICENSE">MIT</a>.</sub></div>
+<div align="center">
+  <a href="#">
+    <img src="https://picsum.photos/seed/aegis-logo/200/200" alt="Aegis Security Logo" width="120" height="120"> <!-- Replace with actual project logo -->
+  </a>
+
+  <h1 align="center">Aegis Security</h1>
+
+  <p align="center">
+    AI-driven endpoint defense delivering real-time protection and forensic insight.
+    <br />
+    <strong>On-device AI stopping threats in real time without tracking you.</strong>
+    <br /><br />
+    <a href="#"><strong>Documentation</strong></a>
+    ·
+    <a href="#">Product Demo</a>
+    ·
+    <a href="#">Security Advisories</a>
+    ·
+    <a href="#">Feature Requests</a>
+  </p>
+</div>
+
+---
+
+<div align="center">
+  <img src="https://img.shields.io/badge/Endpoint_Security-Enterprise--Grade-blue?style=for-the-badge" alt="Endpoint Security">
+  <img src="https://img.shields.io/badge/AI_On--Device-Privacy_First-success?style=for-the-badge" alt="AI On-Device">
+  <img src="https://img.shields.io/badge/Zero_Signature-Behavioral_Detection-critical?style=for-the-badge" alt="Zero Signature">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT">
+</div>
+<div align="center" style="margin-top: 10px;">
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase">
+  <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" alt="Google Cloud">
+  <img src="https://img.shields.io/badge/Genkit-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" alt="Genkit">
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Threat Model & Protection Scope](#threat-model--protection-scope)
+- [Core Capabilities](#core-capabilities)
+- [AI Architecture](#ai-architecture)
+- [Platform Architecture](#platform-architecture)
+- [System Requirements](#system-requirements)
+- [Built With](#built-with)
+- [Installation (Development)](#installation-development)
+- [Project Structure](#project-structure)
+- [Roadmap](#roadmap)
+- [Security & Responsible Disclosure](#security--responsible-disclosure)
+- [Legal Disclaimer](#legal-disclaimer)
+- [License](#license)
+
+---
+
+## Overview
+
+**Aegis Security** is an advanced endpoint protection platform (EPP) designed to defend modern systems against sophisticated cyber threats including zero-day malware, fileless attacks, ransomware, and advanced persistent threats (APTs).
+
+Unlike traditional antivirus software that relies on static signatures, Aegis uses **behavioral intelligence, predictive analysis, and autonomous response mechanisms** powered by Genkit and Gemini to detect malicious intent before execution completes.
+
+Aegis performs **on-device AI inference** for real-time threat detection, ensuring sensitive system and behavioral data never leaves the endpoint for analysis, while leveraging Google Cloud for secure enterprise telemetry and reporting.
+
+---
+
+## Threat Model & Protection Scope
+
+Aegis is designed to mitigate the following threat classes:
+
+- Zero-day malware and polymorphic payloads
+- Fileless and memory-resident attacks
+- Ransomware and destructive malware
+- Living-off-the-Land (LOLBins) abuse
+- Command-and-Control (C2) beaconing
+- Credential harvesting and privilege escalation
+- Advanced Persistent Threat (APT) activity
+
+---
+
+## Core Capabilities
+
+| Capability | Description |
+|---------|------------|
+| **Behavioral DNA Profiling** | Identifies malicious processes by execution flow, API usage, syscall patterns, and runtime anomalies—no signatures required |
+| **Predictive Execution Analysis** | Simulates process behavior seconds ahead of execution to block attacks pre-impact |
+| **Memory Protection Engine** | Prevents DLL injection, process hollowing, shellcode execution, and heap spraying |
+| **Autonomous Network Defense** | Detects malicious traffic patterns including DNS tunneling and covert C2 communication |
+| **Ransomware Containment** | Detects encryption behavior in real time and halts file system modification instantly |
+| **System Self-Healing** | Automatically restores registry keys, permissions, and critical system files |
+| **Threat Attribution Engine** | Maps attacks to known malware families and threat actors with confidence scoring |
+| **Hardware-Backed Integrity** | TPM 2.0–assisted boot and kernel integrity verification |
+| **Privacy-First Architecture** | No cloud scanning, telemetry minimized, zero-trust internal design |
+
+---
+
+## AI Architecture
+
+Aegis employs a **multi-layer autonomous AI model**, designed for defense-in-depth:
+
+### 1. Meta Intelligence Layer
+- Learns global attack patterns
+- Updates threat heuristics without raw data collection
+
+### 2. System Context AI
+- Correlates behaviors across the OS
+- Detects multi-stage and slow-burn attacks
+
+### 3. Process-Level AI
+- Monitors each process in isolation
+- Enforces containment policies instantly
+
+### 4. Network Intelligence AI
+- Analyzes outbound/inbound traffic behavior
+- Blocks covert channels and exfiltration attempts
+
+> All AI inference is performed locally on the endpoint.
+
+---
+
+## Platform Architecture
+
+```
+┌─────────────────────────┐
+│ User Interface (UI)     │  (Next.js, React, Tailwind)
+├─────────────────────────┤
+│ Policy & Management     │  (Firebase, Firestore, GCP Logging)
+├─────────────────────────┤
+│ AI Decision Engine      │  (Genkit, Gemini)
+├─────────────────────────┤
+│ Guard & Telemetry       │  (Simulated Kernel Guard, System Monitoring)
+├─────────────────────────┤
+│ OS / Hardware Layer     │  (Windows, macOS, Linux)
+└─────────────────────────┘
+```
+
+---
+
+## System Requirements
+
+### Supported Platforms
+- Windows 11 (x64)
+- Windows 10 (22H2+)
+
+> macOS and Linux support planned (see roadmap)
+
+### Hardware
+- TPM 2.0 (recommended)
+- Minimum 8 GB RAM
+- SSD storage recommended
+
+---
+
+## Built With
+
+- **Next.js** – Application framework
+- **React** – UI rendering
+- **TypeScript** – Type-safe development
+- **Tailwind CSS** – UI styling
+- **ShadCN/UI** – Component system
+- **Firebase** – Real-time messaging and client-side infrastructure
+- **Google Cloud** – Enterprise-grade audit logging and Firestore persistence
+- **Framer Motion** – Motion and transitions
+- **Genkit (Gemini)** – Local AI orchestration
+- **Lucide React** – Iconography
+- **Recharts** – Security analytics visualization
+
+---
+
+## Installation (Development)
+> ⚠️ **Development implementation.** This project requires additional kernel-mode drivers for full production-grade endpoint protection.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v20 or later)
+- [npm](https://www.npmjs.com/), [pnpm](https://pnpm.io/), or [yarn](https://yarnpkg.com/)
+- A [Gemini API Key](https://ai.google.dev/)
+- A [Google Cloud Project](https://console.cloud.google.com/) with Firestore and Cloud Logging enabled
+
+### Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/your-org/Aegis-Security-Antivirus.git
+    cd Aegis-Security-Antivirus
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Configure environment variables:**
+
+    Create a file named `.env.local` in the root of the project and add your configuration:
+
+    ```ini
+    GEMINI_API_KEY=YOUR_API_KEY_HERE
+    # Local development may require GOOGLE_APPLICATION_CREDENTIALS path
+    ```
+    *Note: Ensure your environment is authenticated with Google Cloud to use Logging and Firestore services.*
+
+4.  **Run the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+    The application will be available at `http://localhost:9002`.
+
+---
+
+## Project Structure
+
+```
+src/
+├── ai/                      # Genkit AI flows and configuration
+│   └── flows/               # Individual AI agent definitions
+├── app/                     # Next.js App Router
+│   ├── dashboard/           # Authenticated security console
+│   │   ├── alerts/page.tsx
+│   │   ├── forensics/page.tsx
+│   │   ├── network/page.tsx
+│   │   └── ...
+│   ├── about/page.tsx
+│   ├── blog/page.tsx
+│   ├── ... (other public pages)
+│   ├── signin/page.tsx
+│   └── page.tsx             # Main landing page
+├── components/
+│   ├── app/                 # Components for the main dashboard
+│   ├── alerts/              # Alert-specific components
+│   ├── forensics/           # Forensics page components
+│   ├── landing/             # Components for the public landing page
+│   ├── network/             # Network monitoring components
+│   └── ui/                  # ShadCN UI components
+├── data/                    # Mock data for UI development
+├── hooks/                   # Custom React hooks
+├── lib/                     # Utilities, helpers, and image definitions
+└── public/                  # Static assets
+```
+
+---
+
+## Roadmap
+
+- [x] Core AI Behavioral Engine
+- [x] Dashboard UI/UX
+- [x] Real-time Threat & Alerting System
+- [ ] **macOS Endpoint Agent:** Development in progress for macOS support.
+- [ ] **Linux EDR Support:** Planning phase for Linux endpoint detection and response.
+- [ ] **Centralized Enterprise Console:** A cloud-based dashboard for managing multiple installations.
+- [ ] **SIEM / SOAR Integrations:** Connectors for Splunk, QRadar, and other security platforms.
+- [ ] **Kernel-Mode Driver (Windows):** For deeper system-level monitoring and control.
+- [ ] **Advanced Incident Response Automation:** Fully automated playbooks for threat remediation.
+
+---
+
+## Security & Responsible Disclosure
+
+We take security seriously. If you discover a security vulnerability, please do not open a public issue. Report it responsibly by following the guidelines in our `SECURITY.md` file (if one exists) or by contacting the project maintainers privately.
+
+---
+
+## Legal Disclaimer
+
+Aegis Security is provided “as is” without warranty of any kind.
+This project is not a replacement for certified commercial endpoint protection solutions in regulated environments.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE.md` file for details.
+
+---
+
+© Aegis Security. All rights reserved.
+
+
+<div align="center"><sub>Built with ❤️ by the Aegis Security Team. Licensed under <a href="LICENSE">MIT</a>.</sub></div>
