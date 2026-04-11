@@ -1,6 +1,6 @@
 <div align="center">
   <a href="#">
-    <img src="https://picsum.photos/seed/aegis-logo/200/200" alt="Aegis Security Logo" width="120" height="120">
+    <img src="https://picsum.photos/seed/aegis-logo/200/200" alt="Aegis Security Logo" width="120" height="120"> <!-- Replace with actual project logo -->
   </a>
 
   <h1 align="center">Aegis Security</h1>
@@ -33,6 +33,8 @@
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase">
+  <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" alt="Google Cloud">
   <img src="https://img.shields.io/badge/Genkit-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white" alt="Genkit">
 </div>
 
@@ -60,9 +62,9 @@
 
 **Aegis Security** is an advanced endpoint protection platform (EPP) designed to defend modern systems against sophisticated cyber threats including zero-day malware, fileless attacks, ransomware, and advanced persistent threats (APTs).
 
-Unlike traditional antivirus software that relies on static signatures, Aegis uses **behavioral intelligence, predictive analysis, and autonomous response mechanisms** to detect malicious intent before execution completes.
+Unlike traditional antivirus software that relies on static signatures, Aegis uses **behavioral intelligence, predictive analysis, and autonomous response mechanisms** powered by Genkit and Gemini to detect malicious intent before execution completes.
 
-Aegis operates entirely **on-device**, ensuring sensitive system and behavioral data never leaves the endpoint.
+Aegis performs **on-device AI inference** for real-time threat detection, ensuring sensitive system and behavioral data never leaves the endpoint for analysis, while leveraging Google Cloud for secure enterprise telemetry and reporting.
 
 ---
 
@@ -126,11 +128,11 @@ Aegis employs a **multi-layer autonomous AI model**, designed for defense-in-dep
 ┌─────────────────────────┐
 │ User Interface (UI)     │  (Next.js, React, Tailwind)
 ├─────────────────────────┤
-│ Policy & Control Layer  │  (Application Logic)
+│ Policy & Management     │  (Firebase, Firestore, GCP Logging)
 ├─────────────────────────┤
 │ AI Decision Engine      │  (Genkit, Gemini)
 ├─────────────────────────┤
-│ Kernel & Memory Guard   │  (Simulated - requires driver)
+│ Guard & Telemetry       │  (Simulated Kernel Guard, System Monitoring)
 ├─────────────────────────┤
 │ OS / Hardware Layer     │  (Windows, macOS, Linux)
 └─────────────────────────┘
@@ -160,6 +162,8 @@ Aegis employs a **multi-layer autonomous AI model**, designed for defense-in-dep
 - **TypeScript** – Type-safe development
 - **Tailwind CSS** – UI styling
 - **ShadCN/UI** – Component system
+- **Firebase** – Real-time messaging and client-side infrastructure
+- **Google Cloud** – Enterprise-grade audit logging and Firestore persistence
 - **Framer Motion** – Motion and transitions
 - **Genkit (Gemini)** – Local AI orchestration
 - **Lucide React** – Iconography
@@ -168,23 +172,22 @@ Aegis employs a **multi-layer autonomous AI model**, designed for defense-in-dep
 ---
 
 ## Installation (Development)
-
-> ⚠️ **This repository represents a research and development implementation.  
-It is not intended for production endpoint protection without additional kernel-level components.**
+> ⚠️ **Development implementation.** This project requires additional kernel-mode drivers for full production-grade endpoint protection.
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v20 or later)
 - [npm](https://www.npmjs.com/), [pnpm](https://pnpm.io/), or [yarn](https://yarnpkg.com/)
 - A [Gemini API Key](https://ai.google.dev/)
+- A [Google Cloud Project](https://console.cloud.google.com/) with Firestore and Cloud Logging enabled
 
 ### Setup
 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/google-gemini/aegis-security-template.git
-    cd aegis-security-template
+    git clone https://github.com/your-org/Aegis-Security-Antivirus.git
+    cd Aegis-Security-Antivirus
     ```
 
 2.  **Install dependencies:**
@@ -195,11 +198,13 @@ It is not intended for production endpoint protection without additional kernel-
 
 3.  **Configure environment variables:**
 
-    Create a file named `.env` in the root of the project and add your Gemini API key:
+    Create a file named `.env.local` in the root of the project and add your configuration:
 
-    ```env
+    ```ini
     GEMINI_API_KEY=YOUR_API_KEY_HERE
+    # Local development may require GOOGLE_APPLICATION_CREDENTIALS path
     ```
+    *Note: Ensure your environment is authenticated with Google Cloud to use Logging and Firestore services.*
 
 4.  **Run the development server:**
 
