@@ -282,3 +282,6 @@ This project is licensed under the MIT License. See the `LICENSE.md` file for de
 ---
 
 © Aegis Security. All rights reserved.
+
+
+<div align="center"><sub>Built with ❤️ by the Aegis Security Team. Licensed under <a href="LICENSE">MIT</a>.</sub></div>
