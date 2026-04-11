@@ -1,0 +1,32 @@
+[package]
+name = "aegis-security"
+version = "1.0.0"
+description = "Next-Gen Antivirus with AI Behavioral Threat Engine"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-shell = "2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lazy_static = "1.4.0"
+tokio = { version = "1.36", features = ["full"] }
+sysinfo = "0.30"
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4"
+env_logger = "0.10"
+async-trait = "0.1"
+rusqlite = { version = "0.31", features = ["bundled"] }
+tokio-tungstenite = "0.21"
+futures-util = "0.3"
+winapi = { version = "0.3", features = ["winsvc", "winuser", "errhandlingapi", "std", "minwindef", "ntstatus", "jobapi2", "processthreadsapi", "handleapi", "psapi"] }
+dirs = "6.0"
+sha2 = "0.10"
+aes-gcm = "0.10"
+regex = "1.10"
+ring = "0.17"
+uuid = { version = "1.10", features = ["v4", "serde"] }
