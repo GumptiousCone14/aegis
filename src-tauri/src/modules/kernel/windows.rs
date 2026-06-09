@@ -145,11 +145,3 @@ pub fn process_creation_callback(_params: PVOID) -> NTSTATUS {
     STATUS_SUCCESS
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct KernelEvent {
-    pub event_type: String,
-    pub process_id: u32,
-    pub thread_id: u32,
-    pub timestamp: chrono::DateTime<chrono::Utc>,
-    pub data: serde_json::Value,
-}

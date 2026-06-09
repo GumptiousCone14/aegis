@@ -23,154 +23,109 @@ import TrafficChart from '@/components/network/TrafficChart';
 import ConnectionItem from '@/components/network/ConnectionItem';
 import ThreatDetailModal from '@/components/network/ThreatDetailModal';
 import AlertBanner from '@/components/alerts/AlertBanner';
+import { invoke } from '@tauri-apps/api/core';
+
+interface NetworkConnection {
+  id: number;
+  domain: string;
+  ip: string;
+  protocol: string;
+  port: string;
+  country: string;
+  threatLevel: 'critical' | 'high' | 'medium' | 'safe';
+  bytesIn: string;
+  bytesOut: string;
+  duration: string;
+  threatDescription?: string;
+  tags?: string[];
+  aiAnalysis: {
+    confidence: number;
+    indicators: Array<{ text: string; detected: boolean }>;
+  };
+}
+
+interface NetworkTrafficData {
+  time: string;
+  inbound: number;
+  outbound: number;
+  suspicious: number;
+}
+
+interface NetworkStats {
+  activeConnections: number;
+  totalBandwidth: string;
+  threatsBlocked: number;
+  suspiciousIPs: number;
+}
+
+interface NetworkAlert {
+  id: string;
+  severity: 'critical' | 'high' | 'medium' | 'info';
+  title: string;
+  message: string;
+  dismissed: boolean;
+  actions: Array<{
+    label: string;
+    primary?: boolean;
+    onClick: () => void;
+  }>;
+}
 
 export default function NetworkMonitor() {
-  const [selectedConnection, setSelectedConnection] = useState(null);
+  const [selectedConnection, setSelectedConnection] = useState<NetworkConnection | null>(null);
   const [filterThreatLevel, setFilterThreatLevel] = useState('all');
   const [isMonitoring, setIsMonitoring] = useState(true);
+  const [connections, setConnections] = useState<NetworkConnection[]>([]);
+  const [trafficData, setTrafficData] = useState<NetworkTrafficData[]>([]);
+  const [stats, setStats] = useState<NetworkStats | null>(null);
+  const [networkAlerts, setNetworkAlerts] = useState<NetworkAlert[]>([]);
 
-  // Mock real-time traffic data
-  const [trafficData, setTrafficData] = useState([
-    { time: '00:00', inbound: 2.4, outbound: 1.8, suspicious: 0 },
-    { time: '00:05', inbound: 3.2, outbound: 2.1, suspicious: 1 },
-    { time: '00:10', inbound: 2.8, outbound: 2.5, suspicious: 0 },
-    { time: '00:15', inbound: 4.1, outbound: 3.2, suspicious: 2 },
-    { time: '00:20', inbound: 3.5, outbound: 2.8, suspicious: 0 },
-    { time: '00:25', inbound: 5.2, outbound: 4.1, suspicious: 3 },
-    { time: '00:30', inbound: 4.8, outbound: 3.9, suspicious: 1 },
-  ]);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+          const [conns, traffic, statsRes] = await Promise.all([
+            invoke<NetworkConnection[]>('get_network_connections'),
+            invoke<NetworkTrafficData[]>('get_network_traffic'),
+            invoke<NetworkStats>('get_network_stats')
+          ]);
+          setConnections(conns);
+          setTrafficData(traffic);
+          setStats(statsRes);
 
-  // Mock network stats
-  const [stats, setStats] = useState({
-    activeConnections: 47,
-    totalBandwidth: '8.7 MB/s',
-    threatsBlocked: 12,
-    suspiciousIPs: 5
-  });
+          // Generate alerts for critical/high connections
+          const alerts: NetworkAlert[] = conns
+            .filter(conn => conn.threatLevel === 'critical' || conn.threatLevel === 'high')
+            .slice(0, 2)
+            .map((conn, idx) => ({
+              id: `net-${idx + 1}`,
+              severity: conn.threatLevel as any,
+              title: `${conn.threatLevel.charAt(0).toUpperCase() + conn.threatLevel.slice(1)} Threat Detected`,
+              message: `Connection to ${conn.domain} blocked (${conn.aiAnalysis?.confidence || 0}% AI confidence)`,
+              dismissed: false,
+              actions: [
+                {
+                  label: 'View Details',
+                  primary: true,
+                  onClick: () => setSelectedConnection(conn)
+                }
+              ]
+            }));
+          setNetworkAlerts(alerts);
+        }
+      } catch (err) {
+        console.error('Failed to load network data:', err);
+      }
+    };
+    loadData();
+    // Could set up polling for real-time updates
+  }, []);
 
-  // Mock connections data
-  const [connections, setConnections] = useState([
-    {
-      id: 1,
-      domain: 'malicious-server.tk',
-      ip: '185.220.101.45',
-      protocol: 'HTTPS',
-      port: '443',
-      country: 'Russia',
-      threatLevel: 'critical',
-      bytesIn: '2.4 MB',
-      bytesOut: '156 KB',
-      duration: '5m 23s',
-      threatDescription: 'Known C2 server detected. Irregular beacon intervals (avg 15s) indicate command and control communication. Connection attempting to exfiltrate encrypted data.',
-      tags: ['C2 Communication', 'Data Exfiltration', 'Known Malicious IP', 'APT28'],
-      aiAnalysis: {
-        confidence: 94,
-        indicators: [
-          { text: 'Regular beacon pattern detected (15-30 second intervals)', detected: true },
-          { text: 'Encrypted payload with non-standard cipher', detected: true },
-          { text: 'IP matches known APT28 infrastructure', detected: true },
-          { text: 'Domain registered in last 30 days', detected: true },
-          { text: 'Traffic volume suggests data exfiltration', detected: true }
-        ]
-      }
-    },
-    {
-      id: 2,
-      domain: 'update-service.xyz',
-      ip: '203.0.113.78',
-      protocol: 'HTTP',
-      port: '8080',
-      country: 'China',
-      threatLevel: 'high',
-      bytesIn: '450 KB',
-      bytesOut: '3.8 MB',
-      duration: '12m 15s',
-      threatDescription: 'Suspicious DNS tunneling detected. High frequency of DNS queries with encoded data in subdomain names. Likely data exfiltration attempt.',
-      tags: ['DNS Tunneling', 'Data Exfiltration', 'Suspicious TLD', 'High Entropy'],
-      aiAnalysis: {
-        confidence: 87,
-        indicators: [
-          { text: 'Abnormal DNS query frequency (500+ queries/min)', detected: true },
-          { text: 'High entropy in subdomain names', detected: true },
-          { text: 'Unusual TXT record responses', detected: true },
-          { text: 'Domain registered via privacy service', detected: true },
-          { text: 'No legitimate WHOIS information', detected: true }
-        ]
-      }
-    },
-    {
-      id: 3,
-      domain: 'cdn.bootstrap-resources.com',
-      ip: '172.67.145.23',
-      protocol: 'HTTPS',
-      port: '443',
-      country: 'USA',
-      threatLevel: 'medium',
-      bytesIn: '1.2 MB',
-      bytesOut: '45 KB',
-      duration: '2m 08s',
-      threatDescription: 'Domain mimics legitimate CDN service. SSL certificate issued recently with short validity period. Potential phishing or malware distribution site.',
-      tags: ['Typosquatting', 'Suspicious Certificate', 'Recent Domain'],
-      aiAnalysis: {
-        confidence: 71,
-        indicators: [
-          { text: 'Domain similar to legitimate service (Levenshtein distance: 2)', detected: true },
-          { text: 'SSL certificate issued 3 days ago', detected: true },
-          { text: 'Self-signed certificate chain', detected: true },
-          { text: 'No previous connection history', detected: false },
-          { text: 'Domain age less than 30 days', detected: true }
-        ]
-      }
-    },
-    {
-      id: 4,
-      domain: 'api.cloudflare.com',
-      ip: '104.16.132.229',
-      protocol: 'HTTPS',
-      port: '443',
-      country: 'USA',
-      threatLevel: 'safe',
-      bytesIn: '89 KB',
-      bytesOut: '12 KB',
-      duration: '45s',
-      threatDescription: null,
-      tags: ['Verified Service', 'Trusted CDN'],
-      aiAnalysis: {
-        confidence: 98,
-        indicators: [
-          { text: 'Domain verified via certificate pinning', detected: false },
-          { text: 'Valid extended validation SSL certificate', detected: false },
-          { text: 'Matches known legitimate service patterns', detected: false },
-          { text: 'Regular connection frequency', detected: false },
-          { text: 'IP belongs to verified network (AS13335)', detected: false }
-        ]
-      }
-    },
-    {
-      id: 5,
-      domain: 'analytics-tracker.info',
-      ip: '198.51.100.45',
-      protocol: 'HTTPS',
-      port: '443',
-      country: 'Germany',
-      threatLevel: 'medium',
-      bytesIn: '234 KB',
-      bytesOut: '892 KB',
-      duration: '8m 42s',
-      threatDescription: 'Unusual outbound data volume for analytics service. Pattern suggests potential data harvesting beyond normal tracking. Multiple privacy flags raised.',
-      tags: ['Excessive Tracking', 'Privacy Risk', 'Fingerprinting'],
-      aiAnalysis: {
-        confidence: 68,
-        indicators: [
-          { text: 'Data transmission exceeds typical analytics volume', detected: true },
-          { text: 'Canvas fingerprinting attempts detected', detected: true },
-          { text: 'Access to clipboard API detected', detected: true },
-          { text: 'Domain not on any tracking protection lists', detected: false },
-          { text: 'Multiple tracking parameters in requests', detected: true }
-        ]
-      }
-    }
-  ]);
+  const handleDismissAlert = (alertId: string | number) => {
+    setNetworkAlerts(alerts => alerts.map(a => 
+      a.id === alertId ? { ...a, dismissed: true } : a
+    ));
+  };
 
   const filteredConnections = connections.filter(conn => 
     filterThreatLevel === 'all' || conn.threatLevel === filterThreatLevel
@@ -181,43 +136,6 @@ export default function NetworkMonitor() {
     high: connections.filter(c => c.threatLevel === 'high').length,
     medium: connections.filter(c => c.threatLevel === 'medium').length,
     safe: connections.filter(c => c.threatLevel === 'safe').length,
-  };
-
-  const [networkAlerts, setNetworkAlerts] = useState([
-    {
-      id: 'net-1',
-      severity: 'critical',
-      title: 'C2 Server Blocked',
-      message: 'Connection to malicious-server.tk blocked (94% AI confidence)',
-      dismissed: false,
-      actions: [
-        {
-          label: 'Details',
-          primary: true,
-          onClick: () => setSelectedConnection(connections[0])
-        }
-      ]
-    },
-    {
-      id: 'net-2',
-      severity: 'high',
-      title: 'DNS Tunneling Detected',
-      message: 'Suspicious DNS activity to update-service.xyz (87% confidence)',
-      dismissed: false,
-      actions: [
-        {
-          label: 'Investigate',
-          primary: true,
-          onClick: () => setSelectedConnection(connections[1])
-        }
-      ]
-    }
-  ]);
-
-  const handleDismissAlert = (alertId: string) => {
-    setNetworkAlerts(alerts => alerts.map(a => 
-      a.id === alertId ? { ...a, dismissed: true } : a
-    ));
   };
 
   return (
@@ -251,29 +169,28 @@ export default function NetworkMonitor() {
         <StatusCard
           icon={Network}
           title="Active Connections"
-          value={stats.activeConnections.toString()}
+          value={stats?.activeConnections.toString() || '0'}
           subtitle="Currently monitored"
           color="blue"
         />
         <StatusCard
           icon={Activity}
           title="Total Bandwidth"
-          value={stats.totalBandwidth}
+          value={stats?.totalBandwidth || '0 KB/s'}
           subtitle="Current throughput"
           color="purple"
-          trend={{ positive: true, value: '+12%' }}
         />
         <StatusCard
           icon={AlertTriangle}
           title="Threats Blocked"
-          value={stats.threatsBlocked.toString()}
+          value={stats?.threatsBlocked.toString() || '0'}
           subtitle="Last 24 hours"
           color="red"
         />
         <StatusCard
           icon={Shield}
           title="Suspicious IPs"
-          value={stats.suspiciousIPs.toString()}
+          value={stats?.suspiciousIPs.toString() || '0'}
           subtitle="Under monitoring"
           color="amber"
         />

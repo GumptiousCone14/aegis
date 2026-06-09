@@ -155,6 +155,10 @@ export default function Dashboard() {
         <p className="text-slate-400">Real-time security monitoring and threat intelligence</p>
       </div>
 
+      {/* Protection Status */}
+      <div className="mb-8">
+        <ProtectionStatus isProtected={true} activeScans={3} />
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Shield, 
   Bell, 
@@ -10,19 +10,11 @@ import {
   Activity,
   Lock,
   Download,
-  Info,
-  Loader2,
-  CreditCard,
-  Cpu,
-  Globe,
-  CheckCircle2,
-  X
+  Info
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { useSystemInfo } from '@/hooks/useSystemInfo';
-import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -30,8 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { invoke } from '@tauri-apps/api/core';
-import { useEffect } from 'react';
 
 export default function Settings() {
   const [settings, setSettings] = useState({
@@ -58,122 +48,8 @@ export default function Settings() {
     autoResponseMinConfidence: 90
   });
 
-  const { info, checkForUpdates } = useSystemInfo();
-  const { toast } = useToast();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [showLicenseModal, setShowLicenseModal] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'searching' | 'downloading' | 'installing'>('idle');
-  const [hasUpdated, setHasUpdated] = useState(false);
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-          const savedSettings = await invoke<any>('get_settings');
-          setSettings(prev => ({ ...prev, ...savedSettings }));
-        }
-      } catch (err) {
-        console.error('Failed to load settings:', err);
-      }
-    };
-    loadSettings();
-  }, []);
-
-  const handleUpdateCheck = async () => {
-    setIsUpdating(true);
-    setUpdateStatus('searching');
-    
-    // Artificial delays for "cool" factor
-    await new Promise(r => setTimeout(r, 1500));
-    setUpdateStatus('downloading');
-    
-    const result = await checkForUpdates();
-    
-    if (result.success) {
-      setUpdateStatus('installing');
-      await new Promise(r => setTimeout(r, 1000));
-      setUpdateStatus('idle');
-      setIsUpdating(false);
-      setHasUpdated(true);
-      setTimeout(() => setHasUpdated(false), 5000);
-      toast({
-        title: "System Updated",
-        description: "Latest threat definitions have been installed.",
-      });
-    } else {
-      setUpdateStatus('idle');
-      setIsUpdating(false);
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: result.message,
-      });
-    }
-  };
-
-  const handleLicenseDetails = () => {
-    setShowLicenseModal(true);
-  };
-
-  const formatDate = (dateStr: string | undefined) => {
-    if (!dateStr) return 'Loading...';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const toggleSetting = async (key: keyof typeof settings) => {
-    const newSettings = { ...settings, [key]: !settings[key] };
-    setSettings(newSettings);
-    
-    try {
-      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        await invoke('update_settings', { settings: newSettings });
-      }
-    } catch (err) {
-      console.error('Failed to save settings:', err);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save settings to backend",
-      });
-    }
-  };
-
-  const handleSliderChange = async (key: keyof typeof settings, value: number) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    
-    try {
-      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        await invoke('update_settings', { settings: newSettings });
-      }
-    } catch (err) {
-      console.error('Failed to save settings:', err);
-    }
-  };
-
-  const handleSelectChange = async (key: keyof typeof settings, value: string) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    
-    try {
-      if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-        await invoke('update_settings', { settings: newSettings });
-      }
-    } catch (err) {
-      console.error('Failed to save settings:', err);
-    }
+  const toggleSetting = (key: keyof typeof settings) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const settingsSections = [
@@ -317,7 +193,7 @@ export default function Settings() {
             </div>
             <Slider
               value={[settings.cpuUsageLimit]}
-              onValueChange={(value) => handleSliderChange('cpuUsageLimit', value[0])}
+              onValueChange={(value) => setSettings(prev => ({ ...prev, cpuUsageLimit: value[0] }))}
               max={100}
               step={5}
               className="w-full"
@@ -353,7 +229,7 @@ export default function Settings() {
             </div>
             <Slider
               value={[settings.alertMinConfidence]}
-              onValueChange={(value) => handleSliderChange('alertMinConfidence', value[0])}
+              onValueChange={(value) => setSettings(prev => ({ ...prev, alertMinConfidence: value[0] }))}
               max={100}
               min={50}
               step={5}
@@ -367,7 +243,7 @@ export default function Settings() {
 
           <div>
             <div className="text-white font-medium mb-3">Email Digest Frequency</div>
-            <Select value={settings.emailDigest} onValueChange={(value) => handleSelectChange('emailDigest', value)}>
+            <Select value={settings.emailDigest} onValueChange={(value) => setSettings(prev => ({ ...prev, emailDigest: value }))}>
               <SelectTrigger className="bg-slate-800 border-slate-700">
                 <SelectValue />
               </SelectTrigger>
@@ -409,7 +285,7 @@ export default function Settings() {
             </div>
             <Slider
               value={[settings.autoResponseMinConfidence]}
-              onValueChange={(value) => handleSliderChange('autoResponseMinConfidence', value[0])}
+              onValueChange={(value) => setSettings(prev => ({ ...prev, autoResponseMinConfidence: value[0] }))}
               max={100}
               min={70}
               step={5}
@@ -482,11 +358,7 @@ export default function Settings() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className={`mt-6 p-6 rounded-2xl transition-all duration-700 border ${
-          hasUpdated 
-          ? 'bg-emerald-500/10 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]' 
-          : 'bg-slate-900/50 border-slate-800'
-        }`}
+        className="mt-6 p-6 rounded-2xl bg-slate-900/50 border border-slate-800"
       >
         <div className="flex items-center gap-3 mb-4">
           <Info className="w-5 h-5 text-slate-400" />
@@ -495,169 +367,33 @@ export default function Settings() {
         <div className="grid md:grid-cols-2 gap-4 text-sm">
           <div className="flex justify-between py-2 border-b border-slate-800">
             <span className="text-slate-400">Version</span>
-            <span className="text-white font-medium">{info?.version || '1.0.0'}</span>
+            <span className="text-white font-medium">1.0.0</span>
           </div>
           <div className="flex justify-between py-2 border-b border-slate-800">
             <span className="text-slate-400">Last Update</span>
-            <span className="text-white font-medium">{formatDate(info?.last_update)}</span>
+            <span className="text-white font-medium">Today, 10:30 AM</span>
           </div>
           <div className="flex justify-between py-2 border-b border-slate-800">
             <span className="text-slate-400">Database Version</span>
-            <span className="text-white font-medium">{info?.database_version || 'Loading...'}</span>
+            <span className="text-white font-medium">2024.01.16.01</span>
           </div>
           <div className="flex justify-between py-2 border-b border-slate-800">
             <span className="text-slate-400">License</span>
-            <span className="text-emerald-400 font-medium">{info?.license || 'Professional'}</span>
+            <span className="text-emerald-400 font-medium">Professional</span>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4">
-          <div className="flex gap-3">
-            <Button 
-              className={`flex-1 transition-all duration-300 ${
-                isUpdating 
-                ? 'bg-slate-800 text-slate-400 cursor-not-allowed border-blue-500/20' 
-                : 'bg-white text-black hover:bg-slate-200 shadow-lg shadow-white/5'
-              }`}
-              onClick={handleUpdateCheck}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <div className="flex items-center gap-3">
-                  <div className="relative w-5 h-5">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="absolute inset-0 rounded-full border-2 border-blue-500/20 border-t-blue-500"
-                    />
-                    <motion.div
-                      animate={{ rotate: -360 }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                      className="absolute inset-[-4px] rounded-full border-2 border-cyan-500/10 border-b-cyan-500"
-                    />
-                  </div>
-                  <span className="capitalize font-bold tracking-tight text-blue-400">{updateStatus}...</span>
-                </div>
-              ) : hasUpdated ? (
-                <div className="flex items-center gap-2 text-emerald-500">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Up to Date</span>
-                </div>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Check for Updates
-                </>
-              )}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex-1 border-slate-700 hover:bg-slate-800 text-white transition-all duration-300"
-              onClick={handleLicenseDetails}
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              License Details
-            </Button>
-          </div>
-
+        <div className="mt-6 flex gap-3">
+          <Button variant="outline" className="flex-1">
+            <Download className="w-4 h-4 mr-2" />
+            Check for Updates
+          </Button>
+          <Button variant="outline" className="flex-1">
+            <Lock className="w-4 h-4 mr-2" />
+            License Details
+          </Button>
         </div>
       </motion.div>
-
-      {/* License Modal */}
-      <AnimatePresence>
-        {showLicenseModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowLicenseModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden"
-            >
-              {/* Modal Header */}
-              <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-transparent">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-white">License Details</h2>
-                    <p className="text-sm text-slate-400">Manage your subscription</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setShowLicenseModal(false)}
-                  className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-8">
-                <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                    <Shield className="w-24 h-24" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="text-blue-100 text-sm font-medium mb-1 uppercase tracking-wider">Current Plan</div>
-                    <div className="text-3xl font-bold text-white mb-4">{info?.license || 'Professional Plus'}</div>
-                    <div className="flex items-center gap-2 text-blue-200 bg-black/20 self-start px-3 py-1 rounded-full text-xs border border-white/10">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Active Subscribtion
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-200">Devices</span>
-                    </div>
-                    <span className="text-white font-semibold">5 / 5 Devices</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-200">Billing Cycle</span>
-                    </div>
-                    <span className="text-white font-semibold">Annual</span>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <div className="flex items-center gap-3">
-                      <Cpu className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-200">Support</span>
-                    </div>
-                    <span className="text-emerald-400 font-semibold">24/7 Priority</span>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex gap-4">
-                  <Button className="flex-1 bg-white text-black hover:bg-slate-200">
-                    Renew License
-                  </Button>
-                  <Button variant="outline" className="flex-1 border-slate-700 hover:bg-slate-800 text-white">
-                    Contact Support
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="p-4 bg-slate-950 border-t border-slate-800 text-center">
-                <p className="text-xs text-slate-500 font-medium tracking-tight">
-                  License key: AEGS-XXXX-XXXX-2026
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

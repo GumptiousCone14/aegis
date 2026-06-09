@@ -3,16 +3,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, CheckCircle2, Activity } from 'lucide-react';
-import { useTauriStatus } from '@/hooks/useTauri';
 
-export default function ProtectionStatus({ isProtected = true, activeScans = 0, user = { name: 'Matthew', email: 'matthew@aegis.ai' } }) {
-  const { status, triggerScan } = useTauriStatus();
-  
+export default function ProtectionStatus({ isProtected = true, activeScans = 0 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-40 p-6 bg-slate-900/80 backdrop-blur-xl border-b border-white/5 overflow-hidden w-full mb-8 shadow-2xl"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="relative p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 overflow-hidden"
     >
       {/* Animated background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]" />
@@ -55,29 +52,21 @@ export default function ProtectionStatus({ isProtected = true, activeScans = 0, 
 
         {/* Status Info */}
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-2xl font-bold text-white uppercase tracking-tight">
-              {status}
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-2xl font-bold text-white">
+              {isProtected ? 'System Protected' : 'Protection Disabled'}
             </h3>
             {isProtected && (
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             )}
           </div>
-          {/* User Login Info */}
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-slate-500 font-medium">Account:</span>
-            <span className="text-xs text-blue-400 font-bold">{user.name}</span>
-            <span className="text-[10px] text-slate-600 px-1.5 py-0.5 rounded bg-white/5">{user.email}</span>
-          </div>
-
-          <p className="text-slate-400 mt-3 text-sm">
+          <p className="text-slate-400 mb-3">
             {isProtected 
               ? 'Real-time protection is active and monitoring your system'
               : 'Your system is vulnerable. Enable protection immediately.'
             }
           </p>
-          
-          <div className="flex items-center gap-4 mt-3 text-sm">
+          <div className="flex items-center gap-4 text-sm">
             <span className="flex items-center gap-2 text-slate-400">
               <Activity className="w-4 h-4 text-blue-400" />
               <span className="text-white font-semibold">{activeScans}</span> active scans

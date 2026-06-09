@@ -1,27 +1,20 @@
-import type {Metadata} from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
+import { Inter } from 'next/font/google';
+import { ReactNode } from 'react';
 
-export const metadata: Metadata = {
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata = {
   title: 'Aegis Security',
-  description: 'Advanced AI-powered cybersecurity platform',
+  description: 'AI‑driven endpoint defense platform',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+    <html lang="en" className={inter.className}>
+      <head />
+      <body className="bg-background text-foreground min-h-screen flex flex-col">
         {children}
-        <Toaster />
       </body>
     </html>
   );
